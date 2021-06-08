@@ -33,21 +33,6 @@ app.get('/crush', async (_request, response) => {
   } catch (error) { console.error(`Erro: ${error.message}`); }
 });
 
-app.get(crushId, async (request, response) => {
-  const { id } = (request.params);
-  try {
-    const data = await getCrush();
-    const findCrush = data.find((crush) => crush.id === Number(id));
-    if (!findCrush) {
-      return response.status(NOT_FOUND).send({ message: 'Crush não encontrado' });
-    }
-    response.status(SUCCESS).send(findCrush);
-  } catch (error) {
-    console.error(`Erro: ${error.message}`);
-    response.status(NOT_FOUND).send({ message: 'Crush não encontrado' });
-  }
-});
-
 const erroEmail = {
   INVALID: 'O "email" deve ter o formato "email@email.com"',
   NULL: 'O campo "email" é obrigatório',
@@ -75,6 +60,29 @@ app.post('/login', (request, res) => {
 });
 
 app.use(tokenMiddleware);
+app.get('/crush/search', async (request, response) => {
+  const { q } = request.query;
+  try {
+    const data = await getCrush();
+    const filterCrush = data.filter((crush) => crush.name.toUpperCase().includes(q.toUpperCase()));
+    return response.status(SUCCESS).send(filterCrush);
+  } catch (error) { console.error(`Erro: ${error.message}`); }
+});
+
+app.get(crushId, async (request, response) => {
+  const { id } = (request.params);
+  try {
+    const data = await getCrush();
+    const findCrush = data.find((crush) => crush.id === Number(id));
+    if (!findCrush) {
+      return response.status(NOT_FOUND).send({ message: 'Crush não encontrado' });
+    }
+    response.status(SUCCESS).send(findCrush);
+  } catch (error) {
+    console.error(`Erro: ${error.message}`);
+    response.status(NOT_FOUND).send({ message: 'Crush não encontrado' });
+  }
+});
 
 app.delete(crushId, async (request, response) => {
   const { id } = request.params;
@@ -86,15 +94,6 @@ app.delete(crushId, async (request, response) => {
     newList.splice(index, 1);
     await fs.promises.writeFile(`${__dirname}/crush.json`, JSON.stringify(newList));
     return response.status(SUCCESS).send({ message: 'Crush deletado com sucesso' });
-  } catch (error) { console.error(`Erro: ${error.message}`); }
-});
-
-app.get('/crush/search', async (request, response) => {
-  const { q } = request.query;
-  try {
-    const data = await getCrush();
-    const filterCrush = data.filter((crush) => crush.name.toUpperCase().includes(q.toUpperCase()));
-    return response.status(SUCCESS).send(filterCrush);
   } catch (error) { console.error(`Erro: ${error.message}`); }
 });
 
